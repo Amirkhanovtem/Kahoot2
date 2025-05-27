@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Как создать и запустить quiz через Kahoot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 50%, #4a148c 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 0;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .kahoot-logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 14px;
+        }
+
+        .language-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #9c27b0;
+            background: white;
+            color: #9c27b0;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 120px;
+            justify-content: space-between;
+        }
+
+        .dropdown-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(156, 39, 176, 0.3);
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .dropdown-btn.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 2px solid #9c27b0;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(156, 39, 176, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            min-width: 150px;
+            overflow: hidden;
+        }
+
+        .dropdown-content.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 500;
+            color: #9c27b0;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f3e5f5;
+        }
+
+        .dropdown-item.selected {
+            background-color: #9c27b0;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2.5rem 1rem;
+            width: 100%;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, #e1bee7, #f3e5f5);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .warning-text {
+            color: #7b1fa2;
+            font-weight: 500;
+        }
+
+        .guide-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .guide-section, .quiz-creation-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .steps-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .step-accordion, .creation-part-accordion {
+            margin-bottom: 0.8rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-button, .creation-part-button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            color: white;
+            border: none;
+            padding: 1rem 1.2rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step-button:hover, .creation-part-button:hover {
+            background: linear-gradient(135deg, #7b1fa2, #4a148c);
+            transform: translateY(-1px);
+        }
+
+        .step-button.active, .creation-part-button.active {
+            background: linear-gradient(135deg, #7b1fa2, #4a148c);
+        }
+
+        .step-number {
+            background: rgba(255, 255, 255, 0.2);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .step-title {
+            flex: 1;
+            text-align: left;
+        }
+
+        .step-arrow {
+            transition: transform 0.3s ease;
+            font-size: 1.1rem;
+        }
+
+        .step-button.active .step-arrow, .creation-part-button.active .step-arrow {
+            transform: rotate(180deg);
+        }
+
+        .step-content, .creation-part-content {
+            background: white;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .step-content.active {
+            max-height: 2000px;
+            padding: 1.5rem;
+        }
+
+        .creation-part-content.active {
+            max-height: 3000px;
+            padding: 1.5rem;
+        }
+
+        /* Стили для шагов внутри частей (без кнопок) */
+        .creation-step {
+            margin-bottom: 1.5rem;
+            padding: 1.2rem;
+            background: rgba(248, 245, 255, 0.8);
+            border-radius: 12px;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .creation-step-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #7b1fa2;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .creation-step-number {
+            background: #9c27b0;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .step-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-highlight {
+            background: linear-gradient(120deg, #9c27b020 0%, #9c27b010 100%);
+            padding: 0.6rem;
+            border-radius: 8px;
+            border-left: 3px solid #9c27b0;
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .important-note {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            color: white;
+            padding: 0.6rem;
+            border-radius: 8px;
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            box-shadow: 0 3px 10px rgba(156, 39, 176, 0.3);
+        }
+
+        .step-image {
+            max-width: 100%;
+            max-height: 400px;
+            width: auto;
+            height: auto;
+            border-radius: 12px;
+            margin: 15px auto 25px;
+            box-shadow:
+                0 4px 20px 0 rgba(156, 39, 176, 0.16),
+                0 0px 0px 6px rgba(156, 39, 176, 0.06);
+            transition: box-shadow 0.2s, transform 0.2s;
+            border: 1.5px solid #f3e5f5;
+            display: block;
+            object-fit: contain;
+        }
+
+        .step-image:hover {
+            box-shadow:
+                0 8px 30px 2px rgba(156, 39, 176, 0.25),
+                0 0px 0px 10px rgba(156, 39, 176, 0.10);
+            transform: scale(1.02);
+        }
+
+        .substep {
+            margin: 1rem 0;
+            padding-left: 1rem;
+            border-left: 2px solid #e1bee7;
+        }
+
+        .substep h4 {
+            color: #7b1fa2;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .contact-info {
+            background: linear-gradient(135deg, #ffffff, #ffffff);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border-left: 4px solid #9c27b0;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .contact-info p {
+            color: #7b1fa2;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .contact-email {
+            color: #4a148c;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 1700px) {
+            .guide-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .hero-section {
+                padding: 2rem 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .step-button, .creation-part-button {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .dropdown-content {
+                right: 0;
+                left: auto;
+            }
+
+            .step-image {
+                max-height: 300px;
+                transform: none;
+            }
+
+            .step-image:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <svg class="kahoot-logo" viewBox="0 0 50 50">
+                    <g>
+                        <path fill="#9c27b0" d="M5 25A20 20 0 1 0 45 25A20 20 0 1 0 5 25Z"/>
+                        <path fill="#fff" d="M25 2A23 23 0 1 0 25 48A23 23 0 1 0 25 2ZM8 17.5C12 13 23.5 14.5 23.5 14.5C27.5 14.5 38 13 42 17.5C46 22 42 37 25 37C8 37 4 22 8 17.5Z"/>
+                    </g>
+                </svg>
+            </div>
+            <div class="language-dropdown">
+                <button class="dropdown-btn" onclick="toggleDropdown()">
+                    <span id="selected-language">Русский</span>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="dropdown-content" id="language-dropdown">
+                    <div class="dropdown-item selected" onclick="switchLanguage('ru', 'Русский')">Русский</div>
+                    <div class="dropdown-item" onclick="switchLanguage('en', 'English')">English</div>
+                    <div class="dropdown-item" onclick="switchLanguage('kz', 'Қазақша')">Қазақша</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Russian Content -->
+        <div id="content-ru">
+            <div class="hero-section">
+                <h1 class="hero-title">Полное руководство по Kahoot</h1>
+                <p class="hero-subtitle">Вход в систему и создание викторин</p>
+            </div>
+
+            <div class="warning">
+                <p class="warning-text"><strong>Уважаемые коллеги,</strong> Kahoot! предназначен только для использования в Учебном центре. Использование в личных целях запрещено. Поскольку аккаунт является общим, просьба не удалять и не корректировать чужие опросы.</p>
+            </div>
+
+            <div class="guide-sections">
+                <!-- Login Guide -->
+                <div class="guide-section">
+                    <h2 class="steps-title">Часть 1: Вход в Kahoot</h2>
+                    
+                    <div class="step-accordion">
+                        <button class="step-button" onclick="toggleStep(this, 'login-step-1-ru')">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Переход на сайт Kahoot</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="step-content" id="login-step-1-ru">
+                            <p class="step-text">Перейдите на сайт <a href="https://kahoot.com/" target="_blank" style="color: #9c27b0;">kahoot.com</a> и нажмите <strong>Log In</strong>.</p>
+                            <img src="1.jpg" alt="Шаг 1" class="step-image">
+                            <img src="2.jpg" alt="Шаг 1" class="step-image">
+                        </div>
+                    </div>
+
+                    <div class="step-accordion">
+                        <button class="step-button" onclick="toggleStep(this, 'login-step-2-ru')">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Авторизация и получение доступа</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="step-content" id="login-step-2-ru">
+                            <div class="substep">
+                                <h4>Ввод логина и пароля</h4>
+                                <p class="step-text">Введите логин и пароль. При повторном входе с того же устройства авторизация произойдет автоматически.</p>
+                                <img src="10.png" alt="Ввод логина и пароля" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Получение доступа с нового устройства</h4>
+                                <p class="step-text">Если вы используете новое устройство, нажмите <strong>Click here to get access</strong>.</p>
+                                <img src="3.jpg" alt="Доступ с нового устройства" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Ввод корпоративной почты</h4>
+                                <p class="step-text">Введите корпоративную почту: <strong>yuliya.grausbard@airastana.kz</strong> и нажмите <strong>I consent</strong>.</p>
+                                <div class="important-note">
+                                    <strong>Важно:</strong> Использование личной почты запрещено!
+                                </div>
+                                <img src="4.jpg" alt="Ввод корпоративной почты" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Завершение входа</h4>
+                                <p class="step-text">Нажмите <strong>Continue</strong> и вы будете перенаправлены на главную страницу Kahoot.</p>
+                                <img src="5.jpg" alt="Продолжение входа" class="step-image">
+                                <img src="6.jpg" alt="Главная страница Kahoot" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Creation Guide -->
+                <div class="quiz-creation-section">
+                    <h2 class="steps-title">Часть 2: Создание и запуск викторины</h2>
+                    
+                    <!-- Part 1: Getting Started -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-1-ru')">
+                            <div class="step-title">Начало работы</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-1-ru">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">1</div>
+                                    Создание нового квиза
+                                </div>
+                                <p class="step-text">Справа виден список всех ранее созданных опросников, нужно нажать <strong>"Create"</strong>.</p>
+                                <img src="1.1.jpg" alt="Создание нового квиза" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">2</div>
+                                    Выбор типа игры
+                                </div>
+                                <p class="step-text">Выберите из доступных вариантов создания игры. Рекомендуется выбрать <strong>Kahoot</strong> для создания интерактивных презентаций с опросами и викторинами.</p>
+                                <img src="1.2.jpg" alt="Выбор типа игры" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 2: Creating Questions -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-2-ru')">
+                            <div class="step-title">Создание вопросов</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-2-ru">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">3</div>
+                                    Название и добавление вопросов
+                                </div>
+                                <p class="step-text">В верхней части введите название викторины, слева добавляйте вопросы нажав <strong>"Add question"</strong>.</p>
+                                <img src="1.3.jpg" alt="Название и добавление вопросов" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">4</div>
+                                    Заполнение деталей вопроса
+                                </div>
+                                <p class="step-text">При добавлении вопроса выберите тип, затем заполните все нужные поля: вопрос, варианты ответа, отметьте верный ответ. При необходимости можно добавить изображение.</p>
+                                <div class="step-highlight">
+                                    <strong>Типы вопросов:</strong> Quiz (викторина), True or false (верно/неверно), Type answer (ввод ответа), Poll (опрос)
+                                </div>
+                                <img src="1.4.jpg" alt="Заполнение деталей вопроса" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">5</div>
+                                    Экран с добавленными вопросами
+                                </div>
+                                <p class="step-text">Просмотрите экран со всеми вопросами, которые вы внесли. Здесь можно редактировать, удалять или добавлять новые вопросы.</p>
+                                <img src="1.5.jpg" alt="Экран с вопросами" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 3: Final Setup -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-3-ru')">
+                            <div class="step-title">Финальная настройка</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-3-ru">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">6</div>
+                                    Добавление названия и описания
+                                </div>
+                                <p class="step-text">Предоставьте четкое название и описание для данной игры. Это поможет сделать ваш Kahoot более видимым и понятным для других пользователей.</p>
+                                <img src="1.6.jpg" alt="Название и описание игры" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">7</div>
+                                    Сохранение викторины
+                                </div>
+                                <p class="step-text">После внесения всех вопросов нажмите <strong>"Save"</strong> для сохранения опросника (в верхнем правом углу). Ваша викторина готова к запуску!</p>
+                                <div class="important-note">
+                                    <strong>Наиболее подходящий вариант для проведения:</strong> Present
+                                </div>
+                                <img src="1.7.jpg" alt="Сохранение викторины" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 4: Launch Game -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-4-ru')">
+                            <div class="step-title">Запуск игры</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-4-ru">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">8</div>
+                                    Выбор режима презентации
+                                </div>
+                                <p class="step-text">Выберите подходящий режим для проведения вашей викторины. Рекомендуется режим <strong>"Host live"</strong> для проведения викторины в реальном времени.</p>
+                                <div class="step-highlight">
+                                    <strong>Режимы:</strong>
+                                    <ul>
+                                        <li><strong>Preview</strong> - предварительный просмотр</li>
+                                        <li><strong>Host live</strong> - проведение в реальном времени</li>
+                                        <li><strong>Presentation</strong> - режим презентации</li>
+                                        <li><strong>Share</strong> - поделиться с другими</li>
+                                    </ul>
+                                </div>
+                                <img src="1.8.jpg" alt="Режимы презентации" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">9</div>
+                                    Экран с пин-кодом игры
+                                </div>
+                                <p class="step-text">Запускается окно с пин-кодом на игру (каждый раз новый). Начиная с этого момента можно показывать этот экран участникам для подключения.</p>
+                                <div class="step-highlight">
+                                    <strong>Как подключиться участникам:</strong>
+                                    <ul>
+                                        <li>Зайти на сайт <strong>kahoot.it</strong></li>
+                                        <li>Ввести пин-код игры</li>
+                                        <li>Ввести свое имя</li>
+                                        <li>Дождаться начала игры</li>
+                                    </ul>
+                                </div>
+                                <img src="1.9.jpg" alt="Экран с пин-кодом" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="contact-info">
+                    <p>По вопросам обращайтесь:</p>
+                    <p class="contact-email">elearning.team@airastana.com</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- English Content -->
+        <div id="content-en" class="hidden">
+            <div class="hero-section">
+                <h1 class="hero-title">Complete Kahoot Guide</h1>
+                <p class="hero-subtitle">Login and Quiz Creation</p>
+            </div>
+
+            <div class="warning">
+                <p class="warning-text"><strong>Dear colleagues,</strong> Kahoot! is intended for use only within the Training Center. Personal use is strictly prohibited. Since the account is shared, please do not delete or modify other people's surveys.</p>
+            </div>
+
+            <div class="guide-sections">
+                <!-- Login Guide -->
+                <div class="guide-section">
+                    <h2 class="steps-title">Part 1: Kahoot Login</h2>
+                    
+                    <div class="step-accordion">
+                        <button class="step-button" onclick="toggleStep(this, 'login-step-1-en')">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Go to Kahoot Website</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="step-content" id="login-step-1-en">
+                            <p class="step-text">Go to <a href="https://kahoot.com/" target="_blank" style="color: #9c27b0;">kahoot.com</a> and click <strong>Log In</strong>.</p>
+                            <img src="1.jpg" alt="Step 1" class="step-image">
+                            <img src="2.jpg" alt="Step 1" class="step-image">
+                        </div>
+                    </div>
+
+                    <div class="step-accordion">
+                        <button class="step-button" onclick="toggleStep(this, 'login-step-2-en')">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Authorization and Access</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="step-content" id="login-step-2-en">
+                            <div class="substep">
+                                <h4>Enter Username and Password</h4>
+                                <p class="step-text">Enter your username and password. When logging in again from the same device, authorization will occur automatically.</p>
+                                <img src="10.png" alt="Enter credentials" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Access from New Device</h4>
+                                <p class="step-text">If you are using a new device, click <strong>Click here to get access</strong>.</p>
+                                <img src="3.jpg" alt="New device access" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Enter Corporate Email</h4>
+                                <p class="step-text">Enter your corporate email: <strong>yuliya.grausbard@airastana.kz</strong> and click <strong>I consent</strong>.</p>
+                                <div class="important-note">
+                                    <strong>Important:</strong> Personal email addresses are prohibited!
+                                </div>
+                                <img src="4.jpg" alt="Corporate email" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Complete Login</h4>
+                                <p class="step-text">Click <strong>Continue</strong> and you will be redirected to the Kahoot home page.</p>
+                                <img src="5.jpg" alt="Continue login" class="step-image">
+                                <img src="6.jpg" alt="Kahoot home page" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Creation Guide -->
+                <div class="quiz-creation-section">
+                    <h2 class="steps-title">Part 2: Creating and Launching Quiz</h2>
+                    
+                    <!-- Part 1: Getting Started -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-1-en')">
+                            <div class="step-title">Getting Started</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-1-en">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">1</div>
+                                    Create New Quiz
+                                </div>
+                                <p class="step-text">On the right, you can see a list of all previously created surveys, click <strong>"Create"</strong>.</p>
+                                <img src="1.1.jpg" alt="Create new quiz" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">2</div>
+                                    Choose Game Type
+                                </div>
+                                <p class="step-text">Choose from available game creation options. It's recommended to select <strong>Kahoot</strong> for creating interactive presentations with polls and quizzes.</p>
+                                <img src="1.2.jpg" alt="Choose game type" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 2: Creating Questions -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-2-en')">
+                            <div class="step-title">Creating Questions</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-2-en">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">3</div>
+                                    Title and Adding Questions
+                                </div>
+                                <p class="step-text">Enter the quiz title at the top, add questions on the left by clicking <strong>"Add question"</strong>.</p>
+                                <img src="1.3.jpg" alt="Title and adding questions" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">4</div>
+                                    Fill Question Details
+                                </div>
+                                <p class="step-text">When adding a question, select the type, then fill in all required fields: question, answer options, mark the correct answer. You can add an image if needed.</p>
+                                <div class="step-highlight">
+                                    <strong>Question types:</strong> Quiz, True or false, Type answer, Poll
+                                </div>
+                                <img src="1.4.jpg" alt="Fill question details" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">5</div>
+                                    Screen with Added Questions
+                                </div>
+                                <p class="step-text">Review the screen with all questions you've entered. Here you can edit, delete, or add new questions.</p>
+                                <img src="1.5.jpg" alt="Screen with questions" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 3: Final Setup -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-3-en')">
+                            <div class="step-title">Final Setup</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-3-en">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">6</div>
+                                    Add Title and Description
+                                </div>
+                                <p class="step-text">Provide a clear title and description for this game. This will help make your Kahoot more visible and understandable to other users.</p>
+                                <img src="1.6.jpg" alt="Game title and description" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">7</div>
+                                    Save Quiz
+                                </div>
+                                <p class="step-text">After adding all questions, click <strong>"Save"</strong> to save the survey (in the upper right corner). Your quiz is ready to launch!</p>
+                                <div class="important-note">
+                                    <strong>Most suitable option for conducting:</strong> Present
+                                </div>
+                                <img src="1.7.jpg" alt="Save quiz" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 4: Launch Game -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-4-en')">
+                            <div class="step-title">Launch Game</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-4-en">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">8</div>
+                                    Choose Presentation Mode
+                                </div>
+                                <p class="step-text">Choose the appropriate mode for conducting your quiz. The <strong>"Host live"</strong> mode is recommended for real-time quiz sessions.</p>
+                                <div class="step-highlight">
+                                    <strong>Modes:</strong>
+                                    <ul>
+                                        <li><strong>Preview</strong> - preview mode</li>
+                                        <li><strong>Host live</strong> - conduct in real-time</li>
+                                        <li><strong>Presentation</strong> - presentation mode</li>
+                                        <li><strong>Share</strong> - share with others</li>
+                                    </ul>
+                                </div>
+                                <img src="1.8.jpg" alt="Presentation modes" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">9</div>
+                                    Game Pin Code Screen
+                                </div>
+                                <p class="step-text">A window with a game pin code will launch (new each time). From this moment, you can show this screen to participants for connection.</p>
+                                <div class="step-highlight">
+                                    <strong>How participants connect:</strong>
+                                    <ul>
+                                        <li>Go to <strong>kahoot.it</strong></li>
+                                        <li>Enter the game pin code</li>
+                                        <li>Enter their name</li>
+                                        <li>Wait for the game to start</li>
+                                    </ul>
+                                </div>
+                                <img src="1.9.jpg" alt="Pin code screen" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="contact-info">
+                    <p>For questions, contact:</p>
+                    <p class="contact-email">elearning.team@airastana.com</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kazakh Content -->
+        <div id="content-kz" class="hidden">
+            <div class="hero-section">
+                <h1 class="hero-title">Kahoot толық нұсқаулығы</h1>
+                <p class="hero-subtitle">Кіру және викторина жасау</p>
+            </div>
+
+            <div class="warning">
+                <p class="warning-text"><strong>Құрметті әріптестер,</strong> Kahoot! тек Оқу орталығында пайдалануға арналған. Жеке мақсатта қолдануға тыйым салынады. Аккаунт ортақ болғандықтан, басқалардың сауалнамаларын жоймауыңызды және түзетпеуіңізді сұраймыз.</p>
+            </div>
+
+            <div class="guide-sections">
+                <!-- Login Guide -->
+                <div class="guide-section">
+                    <h2 class="steps-title">1-бөлім: Kahoot-қа кіру</h2>
+                    
+                    <div class="step-accordion">
+                        <button class="step-button" onclick="toggleStep(this, 'login-step-1-kz')">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Kahoot сайтына өту</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="step-content" id="login-step-1-kz">
+                            <p class="step-text"><a href="https://kahoot.com/" target="_blank" style="color: #9c27b0;">kahoot.com</a> сайтына кіріп, <strong>Log In</strong> батырмасын басыңыз.</p>
+                            <img src="1.jpg" alt="1-қадам" class="step-image">
+                            <img src="2.jpg" alt="1-қадам" class="step-image">
+                        </div>
+                    </div>
+
+                    <div class="step-accordion">
+                        <button class="step-button" onclick="toggleStep(this, 'login-step-2-kz')">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Авторизация және қол жеткізу</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="step-content" id="login-step-2-kz">
+                            <div class="substep">
+                                <h4>Логин мен құпиясөзді енгізу</h4>
+                                <p class="step-text">Логин мен құпиясөзді енгізіңіз. Егер сол құрылғыдан қайта кірсеңіз, жүйе автоматты түрде кіреді.</p>
+                                <img src="10.png" alt="Деректерді енгізу" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Жаңа құрылғыдан кіру</h4>
+                                <p class="step-text">Жаңа құрылғы қолдансаңыз, <strong>Click here to get access</strong> батырмасын басыңыз.</p>
+                                <img src="3.jpg" alt="Жаңа құрылғы қол жеткізуі" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Корпоративтік поштаны енгізу</h4>
+                                <p class="step-text">Корпоративтік поштаңызды енгізіңіз: <strong>yuliya.grausbard@airastana.kz</strong> және <strong>I consent</strong> басыңыз.</p>
+                                <div class="important-note">
+                                    <strong>Маңызды:</strong> Жеке пошта қолдануға тыйым салынады!
+                                </div>
+                                <img src="4.jpg" alt="Корпоративтік пошта" class="step-image">
+                            </div>
+
+                            <div class="substep">
+                                <h4>Кіруді аяқтау</h4>
+                                <p class="step-text"><strong>Continue</strong> басыңыз және сіз Kahoot басты бетіне өтесіз.</p>
+                                <img src="5.jpg" alt="Кіруді жалғастыру" class="step-image">
+                                <img src="6.jpg" alt="Kahoot басты беті" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Creation Guide -->
+                <div class="quiz-creation-section">
+                    <h2 class="steps-title">2-бөлім: Викторина жасау және іске қосу</h2>
+                    
+                    <!-- Part 1: Getting Started -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-1-kz')">
+                            <div class="step-title">Бастау</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-1-kz">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">1</div>
+                                    Жаңа викторина жасау
+                                </div>
+                                <p class="step-text">Оң жақта барлық бұрын жасалған сауалнамалардың тізімі көрінеді, <strong>"Create"</strong> батырмасын басу керек.</p>
+                                <img src="1.1.jpg" alt="Жаңа викторина жасау" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">2</div>
+                                    Ойын түрін таңдау
+                                </div>
+                                <p class="step-text">Қолжетімді ойын жасау нұсқаларынан таңдаңыз. Сауалнамалар мен викториналары бар интерактивті презентациялар жасау үшін <strong>Kahoot</strong> таңдау ұсынылады.</p>
+                                <img src="1.2.jpg" alt="Ойын түрін таңдау" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 2: Creating Questions -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-2-kz')">
+                            <div class="step-title">Сұрақтар жасау</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-2-kz">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">3</div>
+                                    Атауы және сұрақтар қосу
+                                </div>
+                                <p class="step-text">Жоғарғы бөлікте викторина атауын енгізіңіз, сол жақта <strong>"Add question"</strong> басып сұрақтар қосыңыз.</p>
+                                <img src="1.3.jpg" alt="Атауы және сұрақтар қосу" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">4</div>
+                                    Сұрақ мәліметтерін толтыру
+                                </div>
+                                <p class="step-text">Сұрақ қосқан кезде түрін таңдаңыз, содан кейін барлық қажетті өрістерді толтырыңыз: сұрақ, жауап нұсқалары, дұрыс жауапты белгілеңіз. Қажет болса сурет қоса аласыз.</p>
+                                <div class="step-highlight">
+                                    <strong>Сұрақ түрлері:</strong> Quiz (викторина), True or false (дұрыс/бұрыс), Type answer (жауап енгізу), Poll (сауалнама)
+                                </div>
+                                <img src="1.4.jpg" alt="Сұрақ мәліметтерін толтыру" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">5</div>
+                                    Қосылған сұрақтармен экран
+                                </div>
+                                <p class="step-text">Сіз енгізген барлық сұрақтармен экранды қарап шығыңыз. Мұнда сұрақтарды өңдеуге, жоюға немесе жаңаларын қосуға болады.</p>
+                                <img src="1.5.jpg" alt="Сұрақтармен экран" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 3: Final Setup -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-3-kz')">
+                            <div class="step-title">Соңғы баптау</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-3-kz">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">6</div>
+                                    Атау мен сипаттама қосу
+                                </div>
+                                <p class="step-text">Бұл ойын үшін нақты атау мен сипаттама беріңіз. Бұл сіздің Kahoot-ты басқа пайдаланушылар үшін көрінетін және түсінікті етуге көмектеседі.</p>
+                                <img src="1.6.jpg" alt="Ойын атауы мен сипаттамасы" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">7</div>
+                                    Викторинаны сақтау
+                                </div>
+                                <p class="step-text">Барлық сұрақтарды қосқаннан кейін сауалнаманы сақтау үшін <strong>"Save"</strong> басыңыз (жоғарғы оң бұрышта). Сіздің викториналыңыз іске қосуға дайын!</p>
+                                <div class="important-note">
+                                    <strong>Өткізу үшін ең қолайлы нұсқа:</strong> Present
+                                </div>
+                                <img src="1.7.jpg" alt="Викторинаны сақтау" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Part 4: Launch Game -->
+                    <div class="creation-part-accordion">
+                        <button class="creation-part-button" onclick="toggleCreationPart(this, 'creation-part-4-kz')">
+                            <div class="step-title">Ойынды іске қосу</div>
+                            <div class="step-arrow">▼</div>
+                        </button>
+                        <div class="creation-part-content" id="creation-part-4-kz">
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">8</div>
+                                    Презентация режимін таңдау
+                                </div>
+                                <p class="step-text">Викториналыңызды өткізу үшін қолайлы режимді таңдаңыз. Нақты уақытта викторина сессиялары үшін <strong>"Host live"</strong> режимі ұсынылады.</p>
+                                <div class="step-highlight">
+                                    <strong>Режимдер:</strong>
+                                    <ul>
+                                        <li><strong>Preview</strong> - алдын ала қарау режимі</li>
+                                        <li><strong>Host live</strong> - нақты уақытта өткізу</li>
+                                        <li><strong>Presentation</strong> - презентация режимі</li>
+                                        <li><strong>Share</strong> - басқалармен бөлісу</li>
+                                    </ul>
+                                </div>
+                                <img src="1.8.jpg" alt="Презентация режимдері" class="step-image">
+                            </div>
+
+                            <div class="creation-step">
+                                <div class="creation-step-title">
+                                    <div class="creation-step-number">9</div>
+                                    Ойын пин-коды экраны
+                                </div>
+                                <p class="step-text">Ойын пин-коды бар терезе ашылады (әр уақытта жаңа). Осы сәттен бастап бұл экранды қатысушыларға байланыс үшін көрсете аласыз.</p>
+                                <div class="step-highlight">
+                                    <strong>Қатысушылар қалай қосылады:</strong>
+                                    <ul>
+                                        <li><strong>kahoot.it</strong> сайтына кіру</li>
+                                        <li>Ойын пин-кодын енгізу</li>
+                                        <li>Өз атын енгізу</li>
+                                        <li>Ойынның басталуын күту</li>
+                                    </ul>
+                                </div>
+                                <img src="1.9.jpg" alt="Пин-код экраны" class="step-image">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="contact-info">
+                    <p>Сұрақтар бойынша:</p>
+                    <p class="contact-email">elearning.team@airastana.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLanguage = 'ru';
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('language-dropdown');
+            const button = document.querySelector('.dropdown-btn');
+            
+            dropdown.classList.toggle('show');
+            button.classList.toggle('active');
+        }
+
+        function switchLanguage(lang, displayName) {
+            currentLanguage = lang;
+            
+            // Update dropdown
+            document.getElementById('selected-language').textContent = displayName;
+            
+            // Update selected item in dropdown
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+
+            // Hide all content
+            document.getElementById('content-ru').classList.add('hidden');
+            document.getElementById('content-en').classList.add('hidden');
+            document.getElementById('content-kz').classList.add('hidden');
+            
+            // Show selected language content
+            document.getElementById('content-' + lang).classList.remove('hidden');
+            
+            // Close all open steps when switching language
+            document.querySelectorAll('.step-content.active').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.step-button.active').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelectorAll('.creation-part-content.active').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.creation-part-button.active').forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Close dropdown
+            document.getElementById('language-dropdown').classList.remove('show');
+            document.querySelector('.dropdown-btn').classList.remove('active');
+        }
+
+        function toggleStep(button, contentId) {
+            const content = document.getElementById(contentId);
+            const isActive = content.classList.contains('active');
+            
+            // Close all other steps
+            document.querySelectorAll('.step-content').forEach(c => {
+                if (c !== content) {
+                    c.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.step-button').forEach(b => {
+                if (b !== button) {
+                    b.classList.remove('active');
+                }
+            });
+            
+            // Toggle current step
+            if (isActive) {
+                content.classList.remove('active');
+                button.classList.remove('active');
+            } else {
+                content.classList.add('active');
+                button.classList.add('active');
+            }
+        }
+
+        function toggleCreationPart(button, contentId) {
+            const content = document.getElementById(contentId);
+            const isActive = content.classList.contains('active');
+            
+            // Close all other creation parts
+            document.querySelectorAll('.creation-part-content').forEach(c => {
+                if (c !== content) {
+                    c.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.creation-part-button').forEach(b => {
+                if (b !== button) {
+                    b.classList.remove('active');
+                }
+            });
+            
+            // Toggle current creation part
+            if (isActive) {
+                content.classList.remove('active');
+                button.classList.remove('active');
+            } else {
+                content.classList.add('active');
+                button.classList.add('active');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.language-dropdown');
+            if (!dropdown.contains(event.target)) {
+                document.getElementById('language-dropdown').classList.remove('show');
+                document.querySelector('.dropdown-btn').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
